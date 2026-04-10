@@ -1,3 +1,13 @@
+terraform {
+  required_providers {
+    scaling = {
+      source = "scaling-cloud/scaling-cloud"
+    }
+  }
+}
+
+provider "scaling" {}
+
 resource "scaling_oncall_schedule" "primary" {
   name        = "Primary On-Call"
   description = "Primary on-call rotation for the platform team"

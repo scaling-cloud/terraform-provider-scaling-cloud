@@ -1,9 +1,19 @@
+terraform {
+  required_providers {
+    scaling = {
+      source = "scaling-cloud/scaling-cloud"
+    }
+  }
+}
+
+provider "scaling" {}
+
 resource "scaling_oncall_schedule" "primary" {
   name     = "Primary On-Call"
   timezone = "America/New_York"
 
   layer {
-    name                 = "Tier 1"
+    name                 = "Engineers"
     rotation_type        = "weekly"
     rotation_length_days = 7
     handoff_time         = "09:00"
@@ -17,7 +27,7 @@ resource "scaling_oncall_schedule" "secondary" {
   timezone = "America/New_York"
 
   layer {
-    name                 = "Backup"
+    name                 = "Managers"
     rotation_type        = "weekly"
     rotation_length_days = 7
     handoff_time         = "09:00"
@@ -26,9 +36,9 @@ resource "scaling_oncall_schedule" "secondary" {
   }
 }
 
-resource "scaling_escalation_policy" "default" {
-  name        = "Default Escalation"
-  description = "Escalate from primary to secondary on-call"
+resource "scaling_escalation_policy" "multi_tier" {
+  name        = "Multi-Tier Escalation"
+  description = "Escalate from primary to secondary after 5 minutes"
 
   step {
     target_type            = "schedule"
