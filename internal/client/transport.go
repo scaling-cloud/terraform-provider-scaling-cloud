@@ -111,7 +111,7 @@ func backoff(base time.Duration, attempt int) time.Duration {
 	if delay > 30*time.Second {
 		delay = 30 * time.Second
 	}
-	return time.Duration(rand.Int64N(int64(delay) + 1))
+	return time.Duration(rand.Int64N(int64(delay) + 1)) //nolint:gosec // jitter for retry backoff does not need cryptographic randomness
 }
 
 func sleepWithContext(ctx context.Context, d time.Duration) error {
