@@ -9,7 +9,7 @@ import (
 )
 
 var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-	"scalingcloud": providerserver.NewProtocol6WithError(New("test")()),
+	"scaling": providerserver.NewProtocol6WithError(New("test")()),
 }
 
 func TestAccProviderConfigure(t *testing.T) {
@@ -17,7 +17,7 @@ func TestAccProviderConfigure(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: `provider "scalingcloud" {}`,
+				Config: `provider "scaling" {}`,
 			},
 		},
 	})

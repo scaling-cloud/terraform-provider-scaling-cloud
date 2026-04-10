@@ -10,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaling-cloud/terraform-provider-scaling-cloud/internal/client"
+	"github.com/scaling-cloud/terraform-provider-scaling-cloud/internal/resource/escalation_policy"
+	"github.com/scaling-cloud/terraform-provider-scaling-cloud/internal/resource/oncall_schedule"
 )
 
 var _ provider.Provider = &ScalingCloudProvider{}
@@ -32,7 +34,7 @@ func New(version string) func() provider.Provider {
 }
 
 func (p *ScalingCloudProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
-	resp.TypeName = "scalingcloud"
+	resp.TypeName = "scaling"
 	resp.Version = p.version
 }
 
@@ -85,7 +87,10 @@ func (p *ScalingCloudProvider) Configure(ctx context.Context, req provider.Confi
 }
 
 func (p *ScalingCloudProvider) Resources(_ context.Context) []func() resource.Resource {
-	return []func() resource.Resource{}
+	return []func() resource.Resource{
+		oncall_schedule.NewResource,
+		escalation_policy.NewResource,
+	}
 }
 
 func (p *ScalingCloudProvider) DataSources(_ context.Context) []func() datasource.DataSource {
