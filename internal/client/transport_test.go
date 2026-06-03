@@ -25,7 +25,7 @@ func TestAuthTransport_SetsHeaders(t *testing.T) {
 	transport := &authTransport{
 		authHeader: "Bearer my-api-key",
 		userAgent:  "test-agent/1.0",
-		base:       http.DefaultTransport,
+		base:       &http.Transport{},
 	}
 
 	client := &http.Client{Transport: transport}
@@ -56,7 +56,7 @@ func TestRetryTransport_RetriesOn503(t *testing.T) {
 	defer server.Close()
 
 	transport := &retryTransport{
-		base:       http.DefaultTransport,
+		base:       &http.Transport{},
 		maxRetries: 3,
 		baseDelay:  10 * time.Millisecond,
 	}
@@ -88,7 +88,7 @@ func TestRetryTransport_DoesNotRetry400(t *testing.T) {
 	defer server.Close()
 
 	transport := &retryTransport{
-		base:       http.DefaultTransport,
+		base:       &http.Transport{},
 		maxRetries: 3,
 		baseDelay:  10 * time.Millisecond,
 	}
@@ -125,7 +125,7 @@ func TestRetryTransport_RetriesOn429WithRetryAfter(t *testing.T) {
 	defer server.Close()
 
 	transport := &retryTransport{
-		base:       http.DefaultTransport,
+		base:       &http.Transport{},
 		maxRetries: 3,
 		baseDelay:  10 * time.Millisecond,
 	}
@@ -157,7 +157,7 @@ func TestRetryTransport_ExhaustsRetries(t *testing.T) {
 	defer server.Close()
 
 	transport := &retryTransport{
-		base:       http.DefaultTransport,
+		base:       &http.Transport{},
 		maxRetries: 2,
 		baseDelay:  10 * time.Millisecond,
 	}
