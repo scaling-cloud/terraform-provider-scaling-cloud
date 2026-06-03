@@ -7,6 +7,32 @@ The Scaling Cloud provider allows [Terraform](https://www.terraform.io) to manag
 - [Terraform](https://www.terraform.io/downloads) >= 1.0
 - [Go](https://golang.org/doc/install) >= 1.23 (for building from source)
 
+## Installation
+
+The provider is published on the [Terraform Registry](https://registry.terraform.io/providers/scaling-cloud/scaling-cloud/latest). Declare it in your configuration and run `terraform init` to install it automatically:
+
+```hcl
+terraform {
+  required_providers {
+    scaling = {
+      source  = "scaling-cloud/scaling-cloud"
+      version = "~> 0.1"
+    }
+  }
+}
+```
+
+## Documentation
+
+Full provider and resource documentation lives on the Registry:
+
+- [Provider configuration](https://registry.terraform.io/providers/scaling-cloud/scaling-cloud/latest/docs)
+- [`scaling_oncall_schedule`](https://registry.terraform.io/providers/scaling-cloud/scaling-cloud/latest/docs/resources/oncall_schedule)
+- [`scaling_escalation_policy`](https://registry.terraform.io/providers/scaling-cloud/scaling-cloud/latest/docs/resources/escalation_policy)
+- [`scaling_routing_policy`](https://registry.terraform.io/providers/scaling-cloud/scaling-cloud/latest/docs/resources/routing_policy)
+
+The same content is generated into the [`docs/`](docs/) directory and rendered by the Registry.
+
 ## Usage
 
 ```hcl
@@ -95,6 +121,36 @@ go test -v -count=1 -timeout 10m ./internal/...
 ```bash
 golangci-lint run
 ```
+
+### Generating Documentation
+
+The `docs/` directory is generated from the provider schema and the `examples/`
+directory using [`tfplugindocs`](https://github.com/hashicorp/terraform-plugin-docs),
+which is pinned as a Go tool dependency. Regenerate and commit it whenever a
+resource schema or example changes:
+
+```bash
+go generate ./...
+```
+
+CI fails if `docs/` is out of date.
+
+## Releasing
+
+Releases are cut by pushing a semver tag. The `release` workflow cross-compiles
+the binaries with [GoReleaser](https://goreleaser.com), produces a `SHA256SUMS`
+file, and signs it with the GPG key stored in the `GPG_PRIVATE_KEY` and
+`PASSPHRASE` repository secrets. The Terraform Registry ingests the resulting
+GitHub release automatically.
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+Publishing to the Registry requires a one-time setup: connect the GitHub
+repository at [registry.terraform.io](https://registry.terraform.io/publish) and
+register the public half of the signing key under the namespace's GPG keys.
 
 ## License
 
