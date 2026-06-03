@@ -103,3 +103,42 @@ type UpdateEscalationPolicyRequest struct {
 	Description *string               `json:"description"`
 	Steps       []EscalationStepInput `json:"steps"`
 }
+
+type RoutingPolicy struct {
+	ID          string  `json:"id"`
+	OrgID       string  `json:"orgId"`
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
+	IsDefault   bool    `json:"isDefault"`
+	CreatedAt   string  `json:"createdAt"`
+	UpdatedAt   string  `json:"updatedAt"`
+}
+
+type RoutingPolicyWithRules struct {
+	RoutingPolicy
+	Rules []RoutingRule `json:"rules"`
+}
+
+type RoutingRule struct {
+	Severity           string  `json:"severity"`
+	Outcome            string  `json:"outcome"`
+	EscalationPolicyID *string `json:"escalationPolicyId"`
+}
+
+type RoutingRuleInput struct {
+	Severity           string  `json:"severity"`
+	Outcome            string  `json:"outcome"`
+	EscalationPolicyID *string `json:"escalationPolicyId"`
+}
+
+type CreateRoutingPolicyRequest struct {
+	Name        string             `json:"name"`
+	Description *string            `json:"description,omitempty"`
+	Rules       []RoutingRuleInput `json:"rules"`
+}
+
+type UpdateRoutingPolicyRequest struct {
+	Name        string             `json:"name"`
+	Description *string            `json:"description"`
+	Rules       []RoutingRuleInput `json:"rules"`
+}

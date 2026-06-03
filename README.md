@@ -64,6 +64,7 @@ terraform plan
 
 - `scaling_oncall_schedule` - Manages on-call schedules with rotation layers
 - `scaling_escalation_policy` - Manages escalation policies with ordered steps
+- `scaling_routing_policy` - Manages routing policies mapping each alert severity to an outcome
 
 ## Building the Provider
 

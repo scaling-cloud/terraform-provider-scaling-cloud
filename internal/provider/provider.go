@@ -12,6 +12,7 @@ import (
 	"github.com/scaling-cloud/terraform-provider-scaling-cloud/internal/client"
 	"github.com/scaling-cloud/terraform-provider-scaling-cloud/internal/resource/escalation_policy"
 	"github.com/scaling-cloud/terraform-provider-scaling-cloud/internal/resource/oncall_schedule"
+	"github.com/scaling-cloud/terraform-provider-scaling-cloud/internal/resource/routing_policy"
 )
 
 var _ provider.Provider = &ScalingCloudProvider{}
@@ -90,6 +91,7 @@ func (p *ScalingCloudProvider) Resources(_ context.Context) []func() resource.Re
 	return []func() resource.Resource{
 		oncall_schedule.NewResource,
 		escalation_policy.NewResource,
+		routing_policy.NewResource,
 	}
 }
 
