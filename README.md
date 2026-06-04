@@ -30,6 +30,7 @@ Full provider and resource documentation lives on the Registry:
 - [`scaling_oncall_schedule`](https://registry.terraform.io/providers/scaling-cloud/scaling-cloud/latest/docs/resources/oncall_schedule)
 - [`scaling_escalation_policy`](https://registry.terraform.io/providers/scaling-cloud/scaling-cloud/latest/docs/resources/escalation_policy)
 - [`scaling_routing_policy`](https://registry.terraform.io/providers/scaling-cloud/scaling-cloud/latest/docs/resources/routing_policy)
+- [`scaling_working_hours`](https://registry.terraform.io/providers/scaling-cloud/scaling-cloud/latest/docs/resources/working_hours)
 
 The same content is generated into the [`docs/`](docs/) directory and rendered by the Registry.
 
@@ -91,6 +92,7 @@ terraform plan
 - `scaling_oncall_schedule` - Manages on-call schedules with rotation layers
 - `scaling_escalation_policy` - Manages escalation policies with ordered steps
 - `scaling_routing_policy` - Manages routing policies mapping each alert severity to an outcome
+- `scaling_working_hours` - Manages reusable Working Hours sets (timezone + weekly windows) for follow-the-sun escalation step conditions
 
 ## Building the Provider
 
