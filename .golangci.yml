@@ -11,7 +11,14 @@ linters:
     errcheck:
       check-type-assertions: true
   exclusions:
+    # Same suppressions golangci-lint v1 applied by default (e.g. unchecked
+    # Close(), gosec G104 duplicating errcheck).
+    presets:
+      - common-false-positives
+      - legacy
+      - std-error-handling
     rules:
       - path: _test\.go
         linters:
           - errcheck
+          - gosec
