@@ -104,6 +104,34 @@ type UpdateEscalationPolicyRequest struct {
 	Steps       []EscalationStepInput `json:"steps"`
 }
 
+type WorkingHoursWindow struct {
+	Days  []int  `json:"days"`
+	Start string `json:"start"`
+	End   string `json:"end"`
+}
+
+type WorkingHours struct {
+	ID        string               `json:"id"`
+	OrgID     string               `json:"orgId"`
+	Name      string               `json:"name"`
+	Timezone  string               `json:"timezone"`
+	Windows   []WorkingHoursWindow `json:"windows"`
+	CreatedAt string               `json:"createdAt"`
+	UpdatedAt string               `json:"updatedAt"`
+}
+
+type CreateWorkingHoursRequest struct {
+	Name     string               `json:"name"`
+	Timezone string               `json:"timezone"`
+	Windows  []WorkingHoursWindow `json:"windows"`
+}
+
+type UpdateWorkingHoursRequest struct {
+	Name     string               `json:"name"`
+	Timezone string               `json:"timezone"`
+	Windows  []WorkingHoursWindow `json:"windows"`
+}
+
 type RoutingPolicy struct {
 	ID          string  `json:"id"`
 	OrgID       string  `json:"orgId"`
