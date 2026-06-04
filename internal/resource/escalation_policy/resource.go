@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -38,13 +39,19 @@ type EscalationPolicyModel struct {
 }
 
 type EscalationStepModel struct {
-	ID                   types.String `tfsdk:"id"`
-	Position             types.Int64  `tfsdk:"position"`
-	TargetType           types.String `tfsdk:"target_type"`
-	TargetID             types.String `tfsdk:"target_id"`
-	EscalateAfterSeconds types.Int64  `tfsdk:"escalate_after_seconds"`
-	CreatedAt            types.String `tfsdk:"created_at"`
-	UpdatedAt            types.String `tfsdk:"updated_at"`
+	ID                   types.String     `tfsdk:"id"`
+	Position             types.Int64      `tfsdk:"position"`
+	TargetType           types.String     `tfsdk:"target_type"`
+	TargetID             types.String     `tfsdk:"target_id"`
+	EscalateAfterSeconds types.Int64      `tfsdk:"escalate_after_seconds"`
+	Condition            []ConditionModel `tfsdk:"condition"`
+	CreatedAt            types.String     `tfsdk:"created_at"`
+	UpdatedAt            types.String     `tfsdk:"updated_at"`
+}
+
+type ConditionModel struct {
+	WorkingHoursID types.String `tfsdk:"working_hours_id"`
+	When           types.String `tfsdk:"when"`
 }
 
 func NewResource() resource.Resource {
@@ -128,6 +135,29 @@ func (r *EscalationPolicyResource) Schema(_ context.Context, _ resource.SchemaRe
 						},
 						"updated_at": schema.StringAttribute{
 							Computed: true,
+						},
+					},
+					Blocks: map[string]schema.Block{
+						"condition": schema.ListNestedBlock{
+							Description: "Optional Working Hours Condition (ADR-0040). When present, the step participates only while the firing instant is during/outside the set's windows; absent means the step is unconditional. Omitting this block on a step that previously had a condition surfaces a diff and clears it rather than silently preserving it.",
+							NestedObject: schema.NestedBlockObject{
+								Attributes: map[string]schema.Attribute{
+									"working_hours_id": schema.StringAttribute{
+										Required:    true,
+										Description: "ID of the scaling_working_hours set this condition is evaluated against.",
+									},
+									"when": schema.StringAttribute{
+										Required:    true,
+										Description: "Whether the step participates `during` the working hours windows or `outside` them.",
+										Validators: []validator.String{
+											stringvalidator.OneOf("during", "outside"),
+										},
+									},
+								},
+							},
+							Validators: []validator.List{
+								listvalidator.SizeAtMost(1),
+							},
 						},
 					},
 				},
@@ -246,12 +276,20 @@ func (r *EscalationPolicyResource) mapToState(policy *client.EscalationPolicyWit
 	}
 
 	for _, s := range policy.Steps {
+		var condition []ConditionModel
+		if s.Condition != nil {
+			condition = []ConditionModel{{
+				WorkingHoursID: types.StringValue(s.Condition.WorkingHoursID),
+				When:           types.StringValue(s.Condition.When),
+			}}
+		}
 		model.Steps = append(model.Steps, EscalationStepModel{
 			ID:                   types.StringValue(s.ID),
 			Position:             types.Int64Value(int64(s.Position)),
 			TargetType:           types.StringValue(s.TargetType),
 			TargetID:             types.StringValue(s.TargetID),
 			EscalateAfterSeconds: types.Int64Value(int64(s.EscalateAfterSeconds)),
+			Condition:            condition,
 			CreatedAt:            types.StringValue(s.CreatedAt),
 			UpdatedAt:            types.StringValue(s.UpdatedAt),
 		})
@@ -268,9 +306,24 @@ func buildStepInputs(steps []EscalationStepModel) []client.EscalationStepInput {
 			TargetType:           s.TargetType.ValueString(),
 			TargetID:             s.TargetID.ValueString(),
 			EscalateAfterSeconds: int(s.EscalateAfterSeconds.ValueInt64()),
+			Condition:            buildCondition(s.Condition),
 		}
 	}
 	return inputs
+}
+
+// buildCondition maps the optional condition block to the API condition.
+// An absent block yields nil, which the client serializes as an explicit
+// null so a full-replacement update clears any prior condition rather than
+// silently preserving it.
+func buildCondition(condition []ConditionModel) *client.WorkingHoursCondition {
+	if len(condition) == 0 {
+		return nil
+	}
+	return &client.WorkingHoursCondition{
+		WorkingHoursID: condition[0].WorkingHoursID.ValueString(),
+		When:           condition[0].When.ValueString(),
+	}
 }
 
 func stringPtrFromTerraform(v types.String) *string {

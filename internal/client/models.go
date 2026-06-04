@@ -75,21 +75,32 @@ type EscalationPolicyWithSteps struct {
 	Steps []EscalationStep `json:"steps"`
 }
 
+// WorkingHoursCondition gates an escalation step to a Working Hours set.
+// When is "during" or "outside". A nil *WorkingHoursCondition means the step
+// is unconditional; on a full-replacement update it is sent as an explicit
+// null so the server clears any prior condition (ADR-0040).
+type WorkingHoursCondition struct {
+	WorkingHoursID string `json:"workingHoursId"`
+	When           string `json:"when"`
+}
+
 type EscalationStep struct {
-	ID                   string `json:"id"`
-	Position             int    `json:"position"`
-	TargetType           string `json:"targetType"`
-	TargetID             string `json:"targetId"`
-	EscalateAfterSeconds int    `json:"escalateAfterSeconds"`
-	CreatedAt            string `json:"createdAt"`
-	UpdatedAt            string `json:"updatedAt"`
+	ID                   string                 `json:"id"`
+	Position             int                    `json:"position"`
+	TargetType           string                 `json:"targetType"`
+	TargetID             string                 `json:"targetId"`
+	EscalateAfterSeconds int                    `json:"escalateAfterSeconds"`
+	Condition            *WorkingHoursCondition `json:"condition"`
+	CreatedAt            string                 `json:"createdAt"`
+	UpdatedAt            string                 `json:"updatedAt"`
 }
 
 type EscalationStepInput struct {
-	Position             int    `json:"position"`
-	TargetType           string `json:"targetType"`
-	TargetID             string `json:"targetId"`
-	EscalateAfterSeconds int    `json:"escalateAfterSeconds"`
+	Position             int                    `json:"position"`
+	TargetType           string                 `json:"targetType"`
+	TargetID             string                 `json:"targetId"`
+	EscalateAfterSeconds int                    `json:"escalateAfterSeconds"`
+	Condition            *WorkingHoursCondition `json:"condition"`
 }
 
 type CreateEscalationPolicyRequest struct {

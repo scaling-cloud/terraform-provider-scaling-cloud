@@ -41,16 +41,36 @@ resource "scaling_oncall_schedule" "management" {
   }
 }
 
+# Working Hours sets let steps page follow-the-sun. The condition is evaluated
+# at the instant escalation reaches the step; an ineligible step is skipped
+# (never held). If every step's condition fails, the last step pages anyway.
+resource "scaling_working_hours" "uk_office" {
+  name     = "UK office hours"
+  timezone = "Europe/London"
+
+  window {
+    days  = [1, 2, 3, 4, 5]
+    start = "09:00"
+    end   = "17:00"
+  }
+}
+
 # Steps escalate in the order written. Each step pages its target, then waits
-# escalate_after_seconds before escalating to the next step.
+# escalate_after_seconds before escalating to the next step. An optional
+# condition block gates the step to a Working Hours set.
 resource "scaling_escalation_policy" "default" {
   name        = "Default Escalation"
-  description = "Page the primary rotation, then management after 5 minutes"
+  description = "Page the primary rotation during UK hours, then management"
 
   step {
     target_type            = "schedule"
     target_id              = scaling_oncall_schedule.primary.id
     escalate_after_seconds = 300
+
+    condition {
+      working_hours_id = scaling_working_hours.uk_office.id
+      when             = "during"
+    }
   }
 
   step {
@@ -89,9 +109,21 @@ Required:
 - `target_id` (String) ID of the target on-call schedule.
 - `target_type` (String) Type of the escalation target.
 
+Optional:
+
+- `condition` (Block List) Optional Working Hours Condition (ADR-0040). When present, the step participates only while the firing instant is during/outside the set's windows; absent means the step is unconditional. Omitting this block on a step that previously had a condition surfaces a diff and clears it rather than silently preserving it. (see [below for nested schema](#nestedblock--step--condition))
+
 Read-Only:
 
 - `created_at` (String)
 - `id` (String) Unique identifier for the step.
 - `position` (Number) 1-based position, computed from block order.
 - `updated_at` (String)
+
+<a id="nestedblock--step--condition"></a>
+### Nested Schema for `step.condition`
+
+Required:
+
+- `when` (String) Whether the step participates `during` the working hours windows or `outside` them.
+- `working_hours_id` (String) ID of the scaling_working_hours set this condition is evaluated against.
