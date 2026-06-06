@@ -181,3 +181,67 @@ type UpdateRoutingPolicyRequest struct {
 	Description *string            `json:"description"`
 	Rules       []RoutingRuleInput `json:"rules"`
 }
+
+// MaintenanceWindow is the active maintenance interval for a component, or nil
+// when the component is not in maintenance.
+type MaintenanceWindow struct {
+	StartedAt string  `json:"startedAt"`
+	EndsAt    *string `json:"endsAt"`
+}
+
+type Component struct {
+	ID                string             `json:"id"`
+	OrgID             string             `json:"orgId"`
+	Name              string             `json:"name"`
+	Description       *string            `json:"description"`
+	Aliases           []string           `json:"aliases"`
+	OperationalStatus string             `json:"operationalStatus"`
+	MaintenanceWindow *MaintenanceWindow `json:"maintenanceWindow"`
+	CreatedAt         string             `json:"createdAt"`
+	UpdatedAt         string             `json:"updatedAt"`
+}
+
+type CreateComponentRequest struct {
+	Name        string   `json:"name"`
+	Description *string  `json:"description,omitempty"`
+	Aliases     []string `json:"aliases"`
+}
+
+// UpdateComponentRequest carries the full desired state. Aliases is always sent
+// (never omitted) so the server replaces the alias set wholesale, matching the
+// IaC full-replacement posture (ADR-0003).
+type UpdateComponentRequest struct {
+	Name        string   `json:"name"`
+	Description *string  `json:"description"`
+	Aliases     []string `json:"aliases"`
+}
+
+// RoutingSelector is one ordered selector row on an inbound integration
+// (ADR-0039): its matchers are ANDed together and, on the first matching row,
+// RoutingPolicyID becomes the policy that applies.
+type RoutingSelector struct {
+	Matchers        []SelectorMatcher `json:"matchers"`
+	RoutingPolicyID string            `json:"routingPolicyId"`
+}
+
+type SelectorMatcher struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+type InboundIntegration struct {
+	ID              string            `json:"id"`
+	OrgID           string            `json:"orgId"`
+	Name            string            `json:"name"`
+	ComponentID     string            `json:"componentId"`
+	RoutingPolicyID *string           `json:"routingPolicyId"`
+	Selectors       []RoutingSelector `json:"selectors"`
+	CreatedAt       string            `json:"createdAt"`
+	UpdatedAt       string            `json:"updatedAt"`
+}
+
+// SetSelectorsRequest replaces an inbound integration's ordered Routing
+// Selectors wholesale (ADR-0039 / full-replacement, ADR-0003).
+type SetSelectorsRequest struct {
+	Selectors []RoutingSelector `json:"selectors"`
+}
