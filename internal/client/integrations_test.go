@@ -66,6 +66,62 @@ func TestGetInboundIntegration(t *testing.T) {
 	}
 }
 
+func TestListInboundIntegrations(t *testing.T) {
+	t.Parallel()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Method = %q, want GET", r.Method)
+		}
+		if r.URL.Path != "/v1/integrations/inbound" {
+			t.Errorf("Path = %q, want %q", r.URL.Path, "/v1/integrations/inbound")
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]any{
+			"data": map[string]any{
+				"integrations": []map[string]any{
+					{
+						"id":              "int_1",
+						"orgId":           "org_1",
+						"name":            "Datadog",
+						"componentId":     "cmp_1",
+						"routingPolicyId": nil,
+						"selectors":       []map[string]any{},
+						"createdAt":       "2026-01-05T08:00:00.000Z",
+						"updatedAt":       "2026-03-20T16:45:00.000Z",
+					},
+					{
+						"id":              "int_2",
+						"orgId":           "org_1",
+						"name":            "PagerDuty",
+						"componentId":     "cmp_2",
+						"routingPolicyId": "rp_1",
+						"selectors":       []map[string]any{},
+						"createdAt":       "2026-01-06T08:00:00.000Z",
+						"updatedAt":       "2026-03-21T16:45:00.000Z",
+					},
+				},
+			},
+		})
+	}))
+	defer server.Close()
+
+	c, _ := NewScalingClient(server.URL, "test-key")
+	result, err := c.ListInboundIntegrations(context.Background())
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(result) != 2 {
+		t.Fatalf("len = %d, want 2", len(result))
+	}
+	if result[0].Name != "Datadog" || result[1].Name != "PagerDuty" {
+		t.Errorf("got %q/%q, want Datadog/PagerDuty", result[0].Name, result[1].Name)
+	}
+	if result[1].RoutingPolicyID == nil || *result[1].RoutingPolicyID != "rp_1" {
+		t.Errorf("result[1].RoutingPolicyID = %v, want rp_1", result[1].RoutingPolicyID)
+	}
+}
+
 func TestSetInboundSelectors(t *testing.T) {
 	t.Parallel()
 

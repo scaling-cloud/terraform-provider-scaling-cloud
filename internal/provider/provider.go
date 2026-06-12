@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaling-cloud/terraform-provider-scaling-cloud/internal/client"
+	inbound_integration_data "github.com/scaling-cloud/terraform-provider-scaling-cloud/internal/datasource/inbound_integration"
 	"github.com/scaling-cloud/terraform-provider-scaling-cloud/internal/resource/component"
 	"github.com/scaling-cloud/terraform-provider-scaling-cloud/internal/resource/escalation_policy"
 	"github.com/scaling-cloud/terraform-provider-scaling-cloud/internal/resource/inbound_integration"
@@ -102,7 +103,9 @@ func (p *ScalingCloudProvider) Resources(_ context.Context) []func() resource.Re
 }
 
 func (p *ScalingCloudProvider) DataSources(_ context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		inbound_integration_data.NewDataSource,
+	}
 }
 
 func resolveStringAttribute(attr types.String, envVar, defaultValue string) string {

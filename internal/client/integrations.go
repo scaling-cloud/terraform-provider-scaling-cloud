@@ -5,6 +5,19 @@ import (
 	"net/http"
 )
 
+// ListInboundIntegrations returns every inbound integration in the org. The
+// list is unpaginated; callers filter client-side (for example, by name) to
+// resolve a single integration.
+func (c *ScalingClient) ListInboundIntegrations(ctx context.Context) ([]InboundIntegration, error) {
+	data, err := doRequest[struct {
+		Integrations []InboundIntegration `json:"integrations"`
+	}](c, ctx, http.MethodGet, "/v1/integrations/inbound", nil)
+	if err != nil {
+		return nil, err
+	}
+	return data.Integrations, nil
+}
+
 func (c *ScalingClient) GetInboundIntegration(ctx context.Context, integrationID string) (*InboundIntegration, error) {
 	return doRequest[InboundIntegration](c, ctx, http.MethodGet, "/v1/integrations/inbound/"+integrationID, nil)
 }
