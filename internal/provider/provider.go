@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaling-cloud/terraform-provider-scaling-cloud/internal/client"
+	component_data "github.com/scaling-cloud/terraform-provider-scaling-cloud/internal/datasource/component"
 	escalation_policy_data "github.com/scaling-cloud/terraform-provider-scaling-cloud/internal/datasource/escalation_policy"
 	inbound_integration_data "github.com/scaling-cloud/terraform-provider-scaling-cloud/internal/datasource/inbound_integration"
 	oncall_schedule_data "github.com/scaling-cloud/terraform-provider-scaling-cloud/internal/datasource/oncall_schedule"
@@ -113,6 +114,7 @@ func (p *ScalingCloudProvider) DataSources(_ context.Context) []func() datasourc
 		routing_policy_data.NewDataSource,
 		oncall_schedule_data.NewDataSource,
 		working_hours_data.NewDataSource,
+		component_data.NewDataSource,
 	}
 }
 
