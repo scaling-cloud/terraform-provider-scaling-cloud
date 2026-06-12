@@ -8,6 +8,56 @@ import (
 	"testing"
 )
 
+func TestListComponentsWalksAllPages(t *testing.T) {
+	t.Parallel()
+
+	var seenCursors []string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/components" {
+			t.Errorf("Path = %q, want /v1/components", r.URL.Path)
+		}
+		cursor := r.URL.Query().Get("cursor")
+		seenCursors = append(seenCursors, cursor)
+		w.Header().Set("Content-Type", "application/json")
+
+		// First page returns a cursor; the second clears it. The component the
+		// caller wants only appears on the second page.
+		if cursor == "" {
+			json.NewEncoder(w).Encode(map[string]any{
+				"data": map[string]any{
+					"components": []map[string]any{
+						{"id": "cmp_1", "orgId": "org_1", "name": "api", "aliases": []string{}},
+					},
+					"nextCursor": "page2",
+				},
+			})
+			return
+		}
+		json.NewEncoder(w).Encode(map[string]any{
+			"data": map[string]any{
+				"components": []map[string]any{
+					{"id": "cmp_2", "orgId": "org_1", "name": "billing", "aliases": []string{"payments"}},
+				},
+				"nextCursor": nil,
+			},
+		})
+	}))
+	defer server.Close()
+
+	c, _ := NewScalingClient(server.URL, "k")
+	got, err := c.ListComponents(context.Background())
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(got) != 2 || got[0].Name != "api" || got[1].Name != "billing" {
+		t.Fatalf("got %+v, want both pages concatenated", got)
+	}
+	// The walk must request page 1 (no cursor) then page 2 with the returned cursor.
+	if len(seenCursors) != 2 || seenCursors[0] != "" || seenCursors[1] != "page2" {
+		t.Errorf("seenCursors = %v, want [\"\" \"page2\"]", seenCursors)
+	}
+}
+
 func TestCreateComponent(t *testing.T) {
 	t.Parallel()
 
