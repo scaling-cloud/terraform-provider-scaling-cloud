@@ -1,5 +1,14 @@
 package client
 
+// User is a member of the org as returned by GET /v1/users. firstName,
+// lastName, and email are nullable in the API.
+type User struct {
+	ID        string  `json:"id"`
+	FirstName *string `json:"firstName"`
+	LastName  *string `json:"lastName"`
+	Email     *string `json:"email"`
+}
+
 type OncallSchedule struct {
 	ID          string  `json:"id"`
 	OrgID       string  `json:"orgId"`
