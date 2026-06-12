@@ -26,6 +26,13 @@ func TestInboundIntegrationDataSourceRegistered(t *testing.T) {
 	}
 }
 
+func TestComponentDataSourceRegistered(t *testing.T) {
+	t.Parallel()
+	if !registeredDataSourceTypeNames(t)["scaling_component"] {
+		t.Errorf("scaling_component data source not registered with the provider")
+	}
+}
+
 func TestConfigResourceDataSourcesRegistered(t *testing.T) {
 	t.Parallel()
 	names := registeredDataSourceTypeNames(t)
