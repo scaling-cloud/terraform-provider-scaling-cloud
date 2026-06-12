@@ -25,3 +25,18 @@ func TestInboundIntegrationDataSourceRegistered(t *testing.T) {
 		t.Errorf("scaling_inbound_integration data source not registered with the provider")
 	}
 }
+
+func TestConfigResourceDataSourcesRegistered(t *testing.T) {
+	t.Parallel()
+	names := registeredDataSourceTypeNames(t)
+	for _, want := range []string{
+		"scaling_escalation_policy",
+		"scaling_routing_policy",
+		"scaling_oncall_schedule",
+		"scaling_working_hours",
+	} {
+		if !names[want] {
+			t.Errorf("%s data source not registered with the provider", want)
+		}
+	}
+}

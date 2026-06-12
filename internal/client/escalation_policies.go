@@ -5,6 +5,16 @@ import (
 	"net/http"
 )
 
+// ListEscalationPolicies returns every escalation policy in the org (base
+// records, without steps). The list is unpaginated; callers filter client-side.
+func (c *ScalingClient) ListEscalationPolicies(ctx context.Context) ([]EscalationPolicy, error) {
+	data, err := doRequest[[]EscalationPolicy](c, ctx, http.MethodGet, "/v1/escalation/policies", nil)
+	if err != nil {
+		return nil, err
+	}
+	return *data, nil
+}
+
 func (c *ScalingClient) GetEscalationPolicy(ctx context.Context, policyID string) (*EscalationPolicyWithSteps, error) {
 	return doRequest[EscalationPolicyWithSteps](c, ctx, http.MethodGet, "/v1/escalation/policies/"+policyID, nil)
 }
