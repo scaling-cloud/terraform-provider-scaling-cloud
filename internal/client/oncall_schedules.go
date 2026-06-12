@@ -5,6 +5,16 @@ import (
 	"net/http"
 )
 
+// ListOncallSchedules returns every on-call schedule in the org (base records,
+// without layers). The list is unpaginated; callers filter client-side.
+func (c *ScalingClient) ListOncallSchedules(ctx context.Context) ([]OncallSchedule, error) {
+	data, err := doRequest[[]OncallSchedule](c, ctx, http.MethodGet, "/v1/oncall/schedules", nil)
+	if err != nil {
+		return nil, err
+	}
+	return *data, nil
+}
+
 func (c *ScalingClient) GetOncallSchedule(ctx context.Context, scheduleID string) (*OncallScheduleWithLayers, error) {
 	return doRequest[OncallScheduleWithLayers](c, ctx, http.MethodGet, "/v1/oncall/schedules/"+scheduleID, nil)
 }

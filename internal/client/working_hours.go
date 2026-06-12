@@ -5,6 +5,16 @@ import (
 	"net/http"
 )
 
+// ListWorkingHours returns every working-hours set in the org. The list is
+// unpaginated; callers filter client-side.
+func (c *ScalingClient) ListWorkingHours(ctx context.Context) ([]WorkingHours, error) {
+	data, err := doRequest[[]WorkingHours](c, ctx, http.MethodGet, "/v1/working-hours", nil)
+	if err != nil {
+		return nil, err
+	}
+	return *data, nil
+}
+
 func (c *ScalingClient) GetWorkingHours(ctx context.Context, id string) (*WorkingHours, error) {
 	return doRequest[WorkingHours](c, ctx, http.MethodGet, "/v1/working-hours/"+id, nil)
 }

@@ -5,6 +5,16 @@ import (
 	"net/http"
 )
 
+// ListRoutingPolicies returns every routing policy in the org (base records,
+// without rules). The list is unpaginated; callers filter client-side.
+func (c *ScalingClient) ListRoutingPolicies(ctx context.Context) ([]RoutingPolicy, error) {
+	data, err := doRequest[[]RoutingPolicy](c, ctx, http.MethodGet, "/v1/routing/policies", nil)
+	if err != nil {
+		return nil, err
+	}
+	return *data, nil
+}
+
 func (c *ScalingClient) GetRoutingPolicy(ctx context.Context, policyID string) (*RoutingPolicyWithRules, error) {
 	return doRequest[RoutingPolicyWithRules](c, ctx, http.MethodGet, "/v1/routing/policies/"+policyID, nil)
 }
