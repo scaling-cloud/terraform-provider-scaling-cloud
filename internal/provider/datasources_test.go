@@ -26,6 +26,13 @@ func TestInboundIntegrationDataSourceRegistered(t *testing.T) {
 	}
 }
 
+func TestUserDataSourceRegistered(t *testing.T) {
+	t.Parallel()
+	if !registeredDataSourceTypeNames(t)["scaling_user"] {
+		t.Errorf("scaling_user data source not registered with the provider")
+	}
+}
+
 func TestComponentDataSourceRegistered(t *testing.T) {
 	t.Parallel()
 	if !registeredDataSourceTypeNames(t)["scaling_component"] {
