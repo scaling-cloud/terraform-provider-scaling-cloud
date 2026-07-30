@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaling-cloud/terraform-provider-scaling-cloud/internal/client"
 	"github.com/scaling-cloud/terraform-provider-scaling-cloud/internal/datasource/lookup"
@@ -48,6 +49,12 @@ func (d *ComponentDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 			"name": schema.StringAttribute{
 				Required:    true,
 				Description: "Name of the component to look up. Must be unique within the organization.",
+			},
+			"alias": schema.StringAttribute{
+				Optional:    true,
+				Description: "Optional alias to narrow the lookup. When set, only components whose aliases " +
+					"include this value will be considered. Use this to disambiguate when multiple " +
+					"components share a name in the organization.",
 			},
 			"id": schema.StringAttribute{
 				Computed:    true,
@@ -110,6 +117,21 @@ func (d *ComponentDataSource) Read(ctx context.Context, req datasource.ReadReque
 		return
 	}
 
+	var alias string
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("alias"), &alias)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if alias != "" {
+		components = filterByAlias(components, alias)
+		if len(components) == 0 {
+			resp.Diagnostics.AddError("Component lookup failed",
+				fmt.Sprintf("no component found with alias %q", alias))
+			return
+		}
+	}
+
 	name := config.Name.ValueString()
 	match, err := lookup.One(components, "component", "name", name,
 		func(c client.Component) string { return c.Name })
@@ -124,6 +146,19 @@ func (d *ComponentDataSource) Read(ctx context.Context, req datasource.ReadReque
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, model)...)
+}
+
+func filterByAlias(components []client.Component, alias string) []client.Component {
+	var filtered []client.Component
+	for _, c := range components {
+		for _, a := range c.Aliases {
+			if a == alias {
+				filtered = append(filtered, c)
+				break
+			}
+		}
+	}
+	return filtered
 }
 
 func mapToModel(ctx context.Context, c *client.Component) (ComponentModel, diag.Diagnostics) {

@@ -31,6 +31,27 @@ func TestAccComponentDataSource_basic(t *testing.T) {
 	})
 }
 
+func TestAccComponentDataSource_byAlias(t *testing.T) {
+	testutil.TestAccPreCheck(t)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testutil.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccComponentDataSourceByAlias("tf-acc-cmp-alias"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair(
+						"data.scaling_component.by_alias", "id",
+						"scaling_component.test", "id",
+					),
+					resource.TestCheckResourceAttr("data.scaling_component.by_alias", "name", "tf-acc-cmp-alias"),
+					resource.TestCheckResourceAttr("data.scaling_component.by_alias", "aliases.#", "1"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccComponentDataSource_notFound(t *testing.T) {
 	testutil.TestAccPreCheck(t)
 
@@ -64,4 +85,20 @@ data "scaling_component" "test" {
   name = scaling_component.test.name
 }
 `, testutil.ProviderConfig(), name, name)
+}
+
+func testAccComponentDataSourceByAlias(name string) string {
+	return fmt.Sprintf(`
+%s
+
+resource "scaling_component" "test" {
+  name    = %q
+  aliases = ["%s-alias"]
+}
+
+data "scaling_component" "by_alias" {
+  name  = scaling_component.test.name
+  alias = "%s-alias"
+}
+`, testutil.ProviderConfig(), name, name, name)
 }
